@@ -135,9 +135,16 @@ public:
 		std::vector<std::vector<std::string>> records;
 		for (auto& line : lines) {
 			auto record = splitString(line, "|");
-			omitNullStrings(record);
+			
+			auto fieldAllEmpty = true;
+			for (auto& field : record) {
+				if (!field.empty()) {
+					fieldAllEmpty = false;
+					break;
+				}
+			}
 
-			if (record.size() > 0) {
+			if (record.size() > 0 && !fieldAllEmpty) {
 				records.push_back(record);
 			}
 		}
@@ -162,10 +169,22 @@ public:
 					auto column = columns[i];
 
 					if (field.empty()) {
-						recordJson[column] = nlohmann::json({});
+						recordJson[column];
 					}
 					else {
-						recordJson[column] = field;
+						try {
+							try {
+								auto integer = std::stoi(field);
+								recordJson[column] = integer;
+							}
+							catch (...) {
+								auto real = std::stod(field);
+								recordJson[column] = real;
+							}
+						}
+						catch (...) {
+							recordJson[column] = field;
+						}
 					}
 				}
 			}
